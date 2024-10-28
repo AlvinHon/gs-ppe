@@ -1,0 +1,24 @@
+[package]
+name = "gs-ppe"
+version = "0.1.0"
+description = ""
+authors = ["alvin.cpp@gmail.com"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/AlvinHon/gs-ppe"
+categories = ["cryptography"]
+keywords = ["cryptography"]
+edition = "2021"
+
+[lib]
+name = "gs_ppe"
+path = "src/lib.rs"
+
+[dependencies]
+ark-ec = "0.4"
+ark-ff = "0.4"
+ark-serialize = "0.4"
+ark-std = "0.4"
+ndarray = { version = "^0.16.0", default-features = false }
+
+[dev-dependencies]
+ark-bls12-381 = "0.4"
