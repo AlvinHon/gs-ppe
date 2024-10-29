@@ -2,7 +2,7 @@ use ark_ec::pairing::{Pairing, PairingOutput};
 use ark_ff::Zero;
 use std::ops::Mul;
 
-use crate::{arith::matrix::Matrix, com::Com, crs::CommitmentKey, prove::Proof};
+use crate::{arith::matrix::Matrix, com::Com, commit::CommitmentKey, prove::Proof};
 
 pub struct Equation<E: Pairing> {
     pub a: Vec<<E as Pairing>::G1Affine>, // size = n

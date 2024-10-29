@@ -3,16 +3,18 @@ use ark_ff::Zero;
 use ark_std::rand::Rng;
 use std::ops::{Mul, Neg};
 
-use crate::{arith::matrix::Matrix, crs::CRS, equation::Equation, variable::Variable};
+use crate::{
+    arith::matrix::Matrix, commit::CommitmentKeys, equation::Equation, variable::Variable,
+};
 
 pub struct Proof<E: Pairing> {
-    pub phi: Matrix<<E as Pairing>::G2Affine>,
-    pub theta: Matrix<<E as Pairing>::G1Affine>,
+    pub(crate) phi: Matrix<<E as Pairing>::G2Affine>,
+    pub(crate) theta: Matrix<<E as Pairing>::G1Affine>,
 }
 
 pub fn prove<E: Pairing, R: Rng>(
     rng: &mut R,
-    crs: &CRS<E>,
+    crs: &CommitmentKeys<E>,
     equ: &Equation<E>,
     x: &[Variable<<E as Pairing>::G1>],
     y: &[Variable<<E as Pairing>::G2>],
