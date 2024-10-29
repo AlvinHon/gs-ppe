@@ -1,9 +1,9 @@
-use ark_ec::{CurveGroup, Group};
+use ark_ec::CurveGroup;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 use std::ops::Mul;
 
 use crate::{
-    crs::CK,
+    crs::CommitmentKey,
     variable::{VarRandomness, Variable},
 };
 
@@ -11,7 +11,7 @@ use crate::{
 pub struct Com<G: CurveGroup>(pub G::Affine, pub G::Affine);
 
 impl<G: CurveGroup> Com<G> {
-    pub fn new(ck: &CK<G>, x: Variable<G>) -> Self {
+    pub fn new(ck: &CommitmentKey<G>, x: Variable<G>) -> Self {
         let VarRandomness(r1, r2) = x.rand;
         let x = x.value;
 
@@ -20,7 +20,7 @@ impl<G: CurveGroup> Com<G> {
         Com(a.into(), (x + b).into())
     }
 
-    pub fn randomize(&mut self, ck: &CK<G>, r: VarRandomness<G>) {
+    pub fn randomize(&mut self, ck: &CommitmentKey<G>, r: VarRandomness<G>) {
         let VarRandomness(r1, r2) = r;
 
         let a = ck.0 .0.mul(r1) + ck.1 .0.mul(r2);

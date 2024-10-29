@@ -7,11 +7,11 @@ use crate::extract::ExtractionKey;
 pub struct CRS<E: Pairing> {
     pub g1: <E as Pairing>::G1Affine,
     pub g2: <E as Pairing>::G2Affine,
-    pub u: CK<E::G1>,
-    pub v: CK<E::G2>,
+    pub u: CommitmentKey<E::G1>,
+    pub v: CommitmentKey<E::G2>,
 }
 
-pub struct CK<G: CurveGroup>(pub (G::Affine, G::Affine), pub (G::Affine, G::Affine));
+pub struct CommitmentKey<G: CurveGroup>(pub (G::Affine, G::Affine), pub (G::Affine, G::Affine));
 
 impl<E: Pairing> CRS<E> {
     fn new(
@@ -34,8 +34,8 @@ impl<E: Pairing> CRS<E> {
         Self {
             g1,
             g2,
-            u: CK(u1, u2),
-            v: CK(v1, v2),
+            u: CommitmentKey(u1, u2),
+            v: CommitmentKey(v1, v2),
         }
     }
 
@@ -64,8 +64,8 @@ impl<E: Pairing> CRS<E> {
         Self {
             g1,
             g2,
-            u: CK(u1, u2),
-            v: CK(v1, v2),
+            u: CommitmentKey(u1, u2),
+            v: CommitmentKey(v1, v2),
         }
     }
 }
