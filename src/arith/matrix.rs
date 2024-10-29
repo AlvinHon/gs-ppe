@@ -1,4 +1,4 @@
-use std::ops::Index;
+use std::ops::{Add, Index};
 
 use ark_ff::{UniformRand, Zero};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Valid};
@@ -59,18 +59,30 @@ where
         }
     }
 
+    pub fn into<G>(self) -> Matrix<G>
+    where
+        G: Clone + From<F>,
+    {
+        Matrix {
+            inner: self.inner.mapv(G::from),
+        }
+    }
+
     #[inline]
     pub fn dim(&self) -> (usize, usize) {
         self.inner.dim()
     }
 }
 
-impl<F> From<Array<F, Ix2>> for Matrix<F>
+impl<F, G> From<Array<G, Ix2>> for Matrix<F>
 where
-    F: Clone,
+    G: Clone,
+    F: Clone + From<G>,
 {
-    fn from(inner: Array<F, Ix2>) -> Self {
-        Self { inner }
+    fn from(inner: Array<G, Ix2>) -> Self {
+        Self {
+            inner: inner.mapv(F::from),
+        }
     }
 }
 
@@ -130,5 +142,18 @@ where
         validate: ark_serialize::Validate,
     ) -> Result<Self, ark_serialize::SerializationError> {
         Vec::<Vec<F>>::deserialize_with_mode(reader, compress, validate).map(Self::from_vecs)
+    }
+}
+
+impl<F> Add for Matrix<F>
+where
+    F: Clone + Add<Output = F>,
+{
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            inner: self.inner + rhs.inner,
+        }
     }
 }
