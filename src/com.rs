@@ -2,28 +2,27 @@ use ark_ec::{CurveGroup, Group};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 use std::ops::Mul;
 
-use crate::crs::CK;
+use crate::{
+    crs::CK,
+    variable::{VarRandomness, Variable},
+};
 
 #[derive(Copy, Clone, Debug, CanonicalSerialize, CanonicalDeserialize)]
 pub struct Com<G: CurveGroup>(pub G::Affine, pub G::Affine);
 
 impl<G: CurveGroup> Com<G> {
-    pub fn new(
-        ck: &CK<G>,
-        x: G::Affine,
-        r1: <G as Group>::ScalarField,
-        r2: <G as Group>::ScalarField,
-    ) -> Self {
+    pub fn new(ck: &CK<G>, x: Variable<G>) -> Self {
+        let VarRandomness(r1, r2) = x.rand;
+        let x = x.value;
+
         let a = ck.0 .0.mul(r1) + ck.1 .0.mul(r2);
         let b = ck.0 .1.mul(r1) + ck.1 .1.mul(r2);
         Com(a.into(), (x + b).into())
     }
-    pub fn randomize(
-        &mut self,
-        ck: &CK<G>,
-        r1: <G as Group>::ScalarField,
-        r2: <G as Group>::ScalarField,
-    ) {
+
+    pub fn randomize(&mut self, ck: &CK<G>, r: VarRandomness<G>) {
+        let VarRandomness(r1, r2) = r;
+
         let a = ck.0 .0.mul(r1) + ck.1 .0.mul(r2);
         let b = ck.0 .1.mul(r1) + ck.1 .1.mul(r2);
         self.0 = (self.0 + a).into();
