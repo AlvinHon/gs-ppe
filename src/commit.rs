@@ -3,11 +3,7 @@ use ark_ff::One;
 use ark_std::{rand::Rng, UniformRand};
 use std::ops::{Mul, Sub};
 
-use crate::{
-    com::Com,
-    variable::{VarRandomness, Variable},
-    ExtractKey,
-};
+use crate::{com::Com, randomness::Randomness, variable::Variable, ExtractKey};
 
 pub struct CommitmentKeys<E: Pairing> {
     pub u: CommitmentKey<E::G1>,
@@ -128,20 +124,11 @@ pub struct CommitmentKey<G: CurveGroup>(pub (G::Affine, G::Affine), pub (G::Affi
 
 impl<G: CurveGroup> CommitmentKey<G> {
     pub fn commit(&self, x: &Variable<G>) -> Com<G> {
-        let VarRandomness(r1, r2) = x.rand;
+        let Randomness(r1, r2) = x.rand;
         let x = x.value;
 
         let a = self.0 .0.mul(r1) + self.1 .0.mul(r2);
         let b = self.0 .1.mul(r1) + self.1 .1.mul(r2);
         Com(a.into(), (x + b).into())
-    }
-
-    pub fn randomize(&self, com: &mut Com<G>, r: VarRandomness<G>) {
-        let VarRandomness(r1, r2) = r;
-
-        let a = self.0 .0.mul(r1) + self.1 .0.mul(r2);
-        let b = self.0 .1.mul(r1) + self.1 .1.mul(r2);
-        com.0 = (com.0 + a).into();
-        com.1 = (com.1 + b).into();
     }
 }

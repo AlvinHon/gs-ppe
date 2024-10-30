@@ -18,6 +18,9 @@ pub use matrix::Matrix;
 pub mod prove;
 pub use prove::Proof;
 
+pub mod randomness;
+pub use randomness::Randomness;
+
 pub mod variable;
 pub use variable::Variable;
 
@@ -64,7 +67,7 @@ pub fn setup<E: Pairing, R: Rng>(
     };
     let c = x.iter().map(|x_i| cks.u.commit(x_i)).collect();
     let d = y.iter().map(|y_i| cks.v.commit(y_i)).collect();
-    let proof = prove::prove(rng, cks, &equation, &x, &y);
+    let proof = Proof::new(rng, cks, &equation, &x, &y);
     ProofSystem {
         equation,
         c,
