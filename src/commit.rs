@@ -6,7 +6,7 @@ use std::ops::{Mul, Sub};
 use crate::{
     com::Com,
     variable::{VarRandomness, Variable},
-    ExtractionKey,
+    ExtractKey,
 };
 
 pub struct CommitmentKeys<E: Pairing> {
@@ -33,7 +33,7 @@ impl<E: Pairing> CommitmentKeys<E> {
         CommitmentKeys::new(g1, g2, a1, a2, t1, t2)
     }
 
-    pub fn rand_ex<R: Rng>(rng: &mut R) -> (CommitmentKeys<E>, ExtractionKey<E>) {
+    pub fn rand_ex<R: Rng>(rng: &mut R) -> (CommitmentKeys<E>, ExtractKey<E>) {
         let g1 = E::G1Affine::rand(rng);
         let g2 = E::G2Affine::rand(rng);
         Self::setup_ex(rng, g1, g2)
@@ -43,14 +43,14 @@ impl<E: Pairing> CommitmentKeys<E> {
         rng: &mut R,
         g1: <E as Pairing>::G1Affine,
         g2: <E as Pairing>::G2Affine,
-    ) -> (CommitmentKeys<E>, ExtractionKey<E>) {
+    ) -> (CommitmentKeys<E>, ExtractKey<E>) {
         let a1 = E::ScalarField::rand(rng);
         let a2 = E::ScalarField::rand(rng);
         let t1 = E::ScalarField::rand(rng);
         let t2 = E::ScalarField::rand(rng);
         (
             CommitmentKeys::new(g1, g2, a1, a2, t1, t2),
-            ExtractionKey(a1, a2),
+            ExtractKey(a1, a2),
         )
     }
 

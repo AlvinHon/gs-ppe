@@ -3,9 +3,7 @@ use ark_ff::Zero;
 use ark_std::rand::Rng;
 use std::ops::{Mul, Neg};
 
-use crate::{
-    arith::matrix::Matrix, commit::CommitmentKeys, equation::Equation, variable::Variable,
-};
+use crate::{commit::CommitmentKeys, equation::Equation, matrix::Matrix, variable::Variable};
 
 pub struct Proof<E: Pairing> {
     pub(crate) phi: Matrix<<E as Pairing>::G2Affine>,

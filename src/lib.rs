@@ -1,5 +1,4 @@
-pub mod arith;
-pub use arith::matrix::Matrix;
+#![doc = include_str!("../README.md")]
 
 pub mod com;
 pub use com::Com;
@@ -11,7 +10,10 @@ pub mod equation;
 pub use equation::Equation;
 
 pub mod extract;
-pub use extract::ExtractionKey;
+pub use extract::ExtractKey;
+
+pub mod matrix;
+pub use matrix::Matrix;
 
 pub mod prove;
 pub use prove::Proof;
