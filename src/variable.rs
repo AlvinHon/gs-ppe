@@ -1,6 +1,7 @@
 use ark_ec::{CurveGroup, Group};
 use ark_std::{rand::Rng, UniformRand};
 
+#[derive(Clone, Debug)]
 pub struct Variable<G: CurveGroup> {
     pub value: G::Affine,
     pub(crate) rand: VarRandomness<G>,
@@ -13,4 +14,5 @@ impl<G: CurveGroup> Variable<G> {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct VarRandomness<G: Group>(pub G::ScalarField, pub G::ScalarField);

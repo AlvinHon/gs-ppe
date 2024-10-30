@@ -127,7 +127,7 @@ impl<E: Pairing> CommitmentKeys<E> {
 pub struct CommitmentKey<G: CurveGroup>(pub (G::Affine, G::Affine), pub (G::Affine, G::Affine));
 
 impl<G: CurveGroup> CommitmentKey<G> {
-    pub fn commit(&self, x: Variable<G>) -> Com<G> {
+    pub fn commit(&self, x: &Variable<G>) -> Com<G> {
         let VarRandomness(r1, r2) = x.rand;
         let x = x.value;
 

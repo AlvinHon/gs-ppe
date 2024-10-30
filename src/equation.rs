@@ -21,7 +21,12 @@ impl<E: Pairing> Equation<E> {
         proof: &Proof<E>,
     ) -> bool {
         let (m, n) = self.gamma.dim();
-        if c.len() != n || d.len() != m || proof.phi.dim() != (2, 2) || proof.theta.dim() != (2, 2)
+        if self.a.len() != m
+            || self.b.len() != n
+            || c.len() != n
+            || d.len() != m
+            || proof.phi.dim() != (2, 2)
+            || proof.theta.dim() != (2, 2)
         {
             return false;
         }
@@ -102,8 +107,8 @@ impl<E: Pairing> Equation<E> {
                 .a
                 .iter()
                 .zip(d.iter())
-                .fold(PairingOutput::zero(), |acc, (a, d)| {
-                    acc + E::pairing(a, d.1)
+                .fold(PairingOutput::zero(), |acc, (a_j, d_j)| {
+                    acc + E::pairing(a_j, d_j.1)
                 });
             // TODO: optimize this - the 'bd' part was computed before
             let c_bd = c
@@ -128,6 +133,6 @@ impl<E: Pairing> Equation<E> {
             + E::pairing(proof.theta[(0, 1)], v.0 .1)
             + E::pairing(proof.theta[(1, 1)], v.1 .1);
 
-        lhs != rhs
+        lhs == rhs
     }
 }

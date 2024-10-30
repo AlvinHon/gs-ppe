@@ -14,36 +14,35 @@ pub struct Proof<E: Pairing> {
 
 pub fn prove<E: Pairing, R: Rng>(
     rng: &mut R,
-    crs: &CommitmentKeys<E>,
+    cks: &CommitmentKeys<E>,
     equ: &Equation<E>,
     x: &[Variable<<E as Pairing>::G1>],
     y: &[Variable<<E as Pairing>::G2>],
 ) -> Proof<E> {
-    assert_eq!(equ.a.len(), x.len());
-    assert_eq!(equ.b.len(), y.len());
+    assert_eq!(equ.a.len(), y.len());
+    assert_eq!(equ.b.len(), x.len());
 
     let z = Matrix::<E::ScalarField>::rand(rng, 2, 2);
     let z_u = Matrix::new(&[
         [
-            crs.u.0 .0.mul(z[(0, 0)]) + crs.u.1 .0.mul(z[(0, 1)]),
-            crs.u.0 .1.mul(z[(0, 0)]) + crs.u.1 .1.mul(z[(0, 1)]),
+            cks.u.0 .0.mul(z[(0, 0)]) + cks.u.1 .0.mul(z[(0, 1)]),
+            cks.u.0 .1.mul(z[(0, 0)]) + cks.u.1 .1.mul(z[(0, 1)]),
         ],
         [
-            crs.u.0 .0.mul(z[(1, 0)]) + crs.u.1 .0.mul(z[(1, 1)]),
-            crs.u.0 .1.mul(z[(1, 0)]) + crs.u.1 .1.mul(z[(1, 1)]),
+            cks.u.0 .0.mul(z[(1, 0)]) + cks.u.1 .0.mul(z[(1, 1)]),
+            cks.u.0 .1.mul(z[(1, 0)]) + cks.u.1 .1.mul(z[(1, 1)]),
         ],
     ]);
     let z_v = Matrix::new(&[
         [
-            crs.v.0 .0.mul(z[(0, 0)].neg()) + crs.v.1 .0.mul(z[(0, 1)].neg()),
-            crs.v.0 .1.mul(z[(0, 0)].neg()) + crs.v.1 .1.mul(z[(0, 1)].neg()),
+            cks.v.0 .0.mul(z[(0, 0)].neg()) + cks.v.1 .0.mul(z[(1, 0)].neg()),
+            cks.v.0 .1.mul(z[(0, 0)].neg()) + cks.v.1 .1.mul(z[(1, 0)].neg()),
         ],
         [
-            crs.v.0 .0.mul(z[(1, 0)].neg()) + crs.v.1 .0.mul(z[(1, 1)].neg()),
-            crs.v.0 .1.mul(z[(1, 0)].neg()) + crs.v.1 .1.mul(z[(1, 1)].neg()),
+            cks.v.0 .0.mul(z[(0, 1)].neg()) + cks.v.1 .0.mul(z[(1, 1)].neg()),
+            cks.v.0 .1.mul(z[(0, 1)].neg()) + cks.v.1 .1.mul(z[(1, 1)].neg()),
         ],
     ]);
-    let (m, n) = equ.gamma.dim();
 
     let mut t11 = E::ScalarField::zero();
     let mut t12 = E::ScalarField::zero();
@@ -59,50 +58,54 @@ pub fn prove<E: Pairing, R: Rng>(
         }
     }
 
-    let phi11 = crs.v.0 .0.mul(t11) + crs.v.1 .0.mul(t12);
+    let phi11 = cks.v.0 .0.mul(t11) + cks.v.1 .0.mul(t12);
 
     let phi12 = {
         let b_product = equ
             .b
             .iter()
-            .zip(y.iter())
-            .fold(<E as Pairing>::G2::zero(), |acc, (b_i, y_i)| {
-                acc + b_i.mul(y_i.rand.0)
+            .zip(x.iter())
+            .fold(<E as Pairing>::G2::zero(), |acc, (b_i, x_i)| {
+                acc + b_i.mul(x_i.rand.0)
             });
         let y_product = y
             .iter()
             .enumerate()
             .fold(<E as Pairing>::G2::zero(), |acc, (j, y_j)| {
-                let mut exp = E::ScalarField::zero();
-                for i in 0..m {
-                    exp += equ.gamma[(i, j)].mul(y_j.rand.0);
-                }
+                let exp = x
+                    .iter()
+                    .enumerate()
+                    .fold(E::ScalarField::zero(), |acc, (i, x_i)| {
+                        acc + equ.gamma[(i, j)].mul(x_i.rand.0)
+                    });
                 acc + y_j.value.mul(exp)
             });
-        crs.v.0 .1.mul(t11) + crs.v.1 .1.mul(t12) + b_product + y_product
+        cks.v.0 .1.mul(t11) + cks.v.1 .1.mul(t12) + b_product + y_product
     };
 
-    let phi21 = crs.v.0 .0.mul(t21) + crs.v.1 .0.mul(t22);
+    let phi21 = cks.v.0 .0.mul(t21) + cks.v.1 .0.mul(t22);
 
     let phi22 = {
         let b_product = equ
             .b
             .iter()
-            .zip(y.iter())
-            .fold(<E as Pairing>::G2::zero(), |acc, (b_i, y_i)| {
-                acc + b_i.mul(y_i.rand.1)
+            .zip(x.iter())
+            .fold(<E as Pairing>::G2::zero(), |acc, (b_i, x_i)| {
+                acc + b_i.mul(x_i.rand.1)
             });
         let y_product = y
             .iter()
             .enumerate()
             .fold(<E as Pairing>::G2::zero(), |acc, (j, y_j)| {
-                let mut exp = E::ScalarField::zero();
-                for i in 0..m {
-                    exp += equ.gamma[(i, j)].mul(y_j.rand.1);
-                }
+                let exp = x
+                    .iter()
+                    .enumerate()
+                    .fold(E::ScalarField::zero(), |acc, (i, x_i)| {
+                        acc + equ.gamma[(i, j)].mul(x_i.rand.1)
+                    });
                 acc + y_j.value.mul(exp)
             });
-        crs.v.0 .1.mul(t21) + crs.v.1 .1.mul(t22) + b_product + y_product
+        cks.v.0 .1.mul(t21) + cks.v.1 .1.mul(t22) + b_product + y_product
     };
 
     let phi = Matrix::new(&[[phi11, phi12], [phi21, phi22]]) + z_v;
@@ -113,18 +116,20 @@ pub fn prove<E: Pairing, R: Rng>(
         let a_product = equ
             .a
             .iter()
-            .zip(x.iter())
-            .fold(<E as Pairing>::G1::zero(), |acc, (a_i, x_i)| {
-                acc + a_i.mul(x_i.rand.0)
+            .zip(y.iter())
+            .fold(<E as Pairing>::G1::zero(), |acc, (a_j, y_j)| {
+                acc + a_j.mul(y_j.rand.0)
             });
         let x_product = x
             .iter()
             .enumerate()
             .fold(<E as Pairing>::G1::zero(), |acc, (i, x_i)| {
-                let mut exp = E::ScalarField::zero();
-                for j in 0..n {
-                    exp += equ.gamma[(i, j)].mul(x_i.rand.0);
-                }
+                let exp = y
+                    .iter()
+                    .enumerate()
+                    .fold(E::ScalarField::zero(), |acc, (j, y_j)| {
+                        acc + equ.gamma[(i, j)].mul(y_j.rand.0)
+                    });
                 acc + x_i.value.mul(exp)
             });
         a_product + x_product
@@ -136,18 +141,20 @@ pub fn prove<E: Pairing, R: Rng>(
         let a_product = equ
             .a
             .iter()
-            .zip(x.iter())
-            .fold(<E as Pairing>::G1::zero(), |acc, (a_i, x_i)| {
-                acc + a_i.mul(x_i.rand.1)
+            .zip(y.iter())
+            .fold(<E as Pairing>::G1::zero(), |acc, (a_j, y_j)| {
+                acc + a_j.mul(y_j.rand.1)
             });
         let x_product = x
             .iter()
             .enumerate()
             .fold(<E as Pairing>::G1::zero(), |acc, (i, x_i)| {
-                let mut exp = E::ScalarField::zero();
-                for j in 0..n {
-                    exp += equ.gamma[(i, j)].mul(x_i.rand.1);
-                }
+                let exp = y
+                    .iter()
+                    .enumerate()
+                    .fold(E::ScalarField::zero(), |acc, (j, y_j)| {
+                        acc + equ.gamma[(i, j)].mul(y_j.rand.1)
+                    });
                 acc + x_i.value.mul(exp)
             });
         a_product + x_product
