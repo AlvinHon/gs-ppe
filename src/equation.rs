@@ -21,14 +21,13 @@ impl<E: Pairing> Equation<E> {
         proof: &Proof<E>,
     ) -> bool {
         let (m, n) = self.gamma.dim();
-        if self.a.len() != m
-            || self.b.len() != n
-            || c.len() != n
-            || d.len() != m
+        if self.a.len() != n
+            || self.b.len() != m
+            || c.len() != m
+            || d.len() != n
             || proof.phi.dim() != (2, 2)
             || proof.theta.dim() != (2, 2)
         {
-            println!("Invalid dimensions");
             return false;
         }
 
@@ -53,7 +52,6 @@ impl<E: Pairing> Equation<E> {
             + E::pairing(proof.theta[(1, 0)], v.1 .0);
 
         if lhs != rhs {
-            println!("Equation 1 failed");
             return false;
         }
 
@@ -77,7 +75,6 @@ impl<E: Pairing> Equation<E> {
             + E::pairing(proof.theta[(0, 0)], v.0 .1)
             + E::pairing(proof.theta[(1, 0)], v.1 .1);
         if lhs != rhs {
-            println!("Equation 2 failed");
             return false;
         }
 
@@ -101,7 +98,6 @@ impl<E: Pairing> Equation<E> {
             + E::pairing(proof.theta[(0, 1)], v.0 .0)
             + E::pairing(proof.theta[(1, 1)], v.1 .0);
         if lhs != rhs {
-            println!("Equation 3 failed");
             return false;
         }
 
@@ -137,7 +133,6 @@ impl<E: Pairing> Equation<E> {
             + E::pairing(proof.theta[(0, 1)], v.0 .1)
             + E::pairing(proof.theta[(1, 1)], v.1 .1);
 
-        println!("final check");
         lhs == rhs
     }
 }
