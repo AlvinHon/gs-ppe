@@ -82,3 +82,21 @@ pub struct ProofSystem<E: Pairing> {
     pub d: Vec<Com<<E as Pairing>::G2>>,
     pub proof: Proof<E>,
 }
+
+impl<E: Pairing> ProofSystem<E> {
+    pub fn randomize<R: Rng>(mut self, rng: &mut R, cks: &CommitmentKeys<E>) -> Self {
+        let cr = self
+            .c
+            .iter_mut()
+            .map(|c_i| c_i.randomize(rng, &cks.u))
+            .collect::<Vec<_>>();
+        let ds = self
+            .d
+            .iter_mut()
+            .map(|d_j| d_j.randomize(rng, &cks.v))
+            .collect::<Vec<_>>();
+
+        self.proof.randomize(rng, &cks, &self.equation, &cr, &ds);
+        self
+    }
+}

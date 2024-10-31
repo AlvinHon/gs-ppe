@@ -92,21 +92,10 @@ fn test_randomized_proof() {
 
     let ProofSystem {
         equation,
-        mut c,
-        mut d,
-        mut proof,
-    } = proof_system;
-
-    let cr = c
-        .iter_mut()
-        .map(|c_i| c_i.randomize(rng, &cks.u))
-        .collect::<Vec<_>>();
-    let ds = d
-        .iter_mut()
-        .map(|d_j| d_j.randomize(rng, &cks.v))
-        .collect::<Vec<_>>();
-
-    proof.randomize(rng, &cks, &equation, &cr, &ds);
+        c,
+        d,
+        proof,
+    } = proof_system.randomize(rng, &cks);
 
     assert!(equation.verify(&cks.u, &cks.v, &c, &d, &proof));
 }
@@ -139,21 +128,10 @@ fn test_randomized_proof_m_x_n() {
 
     let ProofSystem {
         equation,
-        mut c,
-        mut d,
-        mut proof,
-    } = proof_system;
-
-    let cr = c
-        .iter_mut()
-        .map(|c_i| c_i.randomize(rng, &cks.u))
-        .collect::<Vec<_>>();
-    let ds = d
-        .iter_mut()
-        .map(|d_j| d_j.randomize(rng, &cks.v))
-        .collect::<Vec<_>>();
-
-    proof.randomize(rng, &cks, &equation, &cr, &ds);
+        c,
+        d,
+        proof,
+    } = proof_system.randomize(rng, &cks);
 
     assert!(equation.verify(&cks.u, &cks.v, &c, &d, &proof));
 }

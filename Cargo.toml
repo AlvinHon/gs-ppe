@@ -1,12 +1,12 @@
 [package]
 name = "gs-ppe"
 version = "0.1.0"
-description = ""
+description = "Rust Implementation of SXDH Groth-Sahai Proofs for Pairing-Product Equations defined in 'Commuting Signatures and Verifiable Encryption' by Georg Fuchsbauer"
 authors = ["alvin.cpp@gmail.com"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/AlvinHon/gs-ppe"
 categories = ["cryptography"]
-keywords = ["cryptography"]
+keywords = ["cryptography", "zero-knowledge", "pairing", "groth-sahai"]
 edition = "2021"
 
 [lib]
