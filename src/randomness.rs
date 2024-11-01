@@ -1,12 +1,17 @@
+//! Defines the struct [Randomness], the randomness commonly used in the entire scheme. i.e. the `r` and `s`
+//! notated in the paper.
+
 use std::ops::Add;
 
 use ark_ec::Group;
 use ark_std::{rand::Rng, UniformRand};
 
-#[derive(Clone, Debug)]
+/// Randomness used in the entire scheme. i.e. the `r` and `s`.
+#[derive(Copy, Clone, Debug)]
 pub struct Randomness<G: Group>(pub G::ScalarField, pub G::ScalarField);
 
 impl<G: Group> Randomness<G> {
+    /// Generates a random `Randomness` using the given `rng`.
     pub fn rand<R: Rng>(rng: &mut R) -> Self {
         Self(G::ScalarField::rand(rng), G::ScalarField::rand(rng))
     }

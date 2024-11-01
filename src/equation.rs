@@ -1,21 +1,101 @@
+//! Defines the struct [Equation], the equation `E` notated in section 6.3 in the paper [Fuc10](https://eprint.iacr.org/2010/233.pdf).
+
 use ark_ec::pairing::{Pairing, PairingOutput};
 use ark_ff::Zero;
 use std::ops::Mul;
 
-use crate::{com::Com, commit::CommitmentKey, matrix::Matrix, prove::Proof};
+use crate::{Com, CommitmentKeys, Matrix, Proof};
 
+/// The pairing product equation `E`, represented by:
+/// - the constant `a` in a vector of size `n`
+/// - the constant `b` in a vector of size `m`
+/// - the constant `gamma` in a matrix of dimension `(m, n)`
+/// - the target value `target` in the pairing output
+///
+/// where the values satisfies equation:
+///
+/// Π e(a_i, y_i) Π e(x_i, b_i) ΠΠ e(x_i, y_i)^gamma_ij = target
+///
+/// for some x and y.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Equation<E: Pairing> {
-    pub a: Vec<<E as Pairing>::G1Affine>, // size = n
-    pub b: Vec<<E as Pairing>::G2Affine>, // size = m
-    pub gamma: Matrix<E::ScalarField>,    // dim = (m, n)
-    pub target: PairingOutput<E>,
+    pub(crate) a: Vec<<E as Pairing>::G1Affine>, // size = n
+    pub(crate) b: Vec<<E as Pairing>::G2Affine>, // size = m
+    pub(crate) gamma: Matrix<E::ScalarField>,    // dim = (m, n)
+    pub(crate) target: PairingOutput<E>,
 }
 
 impl<E: Pairing> Equation<E> {
+    /// Constructs an equation `E` with the given constants `a`, `b`, `gamma`, and `target`.
+    ///
+    /// ## Panics
+    /// Panics if the dimension of `gamma` != (m, n), where m = b.len() and n = a.len().
+    pub fn new(
+        a: Vec<<E as Pairing>::G1Affine>,
+        b: Vec<<E as Pairing>::G2Affine>,
+        gamma: Matrix<E::ScalarField>,
+        target: PairingOutput<E>,
+    ) -> Self {
+        assert_eq!(gamma.dim(), (b.len(), a.len()));
+        Self {
+            a,
+            b,
+            gamma,
+            target,
+        }
+    }
+
+    // TODO:
+    // "Remark 5. Blazy et al. [BFI+10] show that by using techniques of batch verification, the number of pairing
+    // computations can be reduced from 4m + n + 16 to 2m+n+8".
+
+    /// The Verification function `Verify(ck, E, c, d, (φ, θ))`. Verifies the equation `E` with
+    /// the given commitments `c`, `d`, and `proof`. Returns false if the verification fails or
+    /// the dimensions of the inputs are incorrect.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use ark_bls12_381::Bls12_381 as E;
+    /// use ark_ec::pairing::Pairing;
+    /// use ark_std::{test_rng, UniformRand};
+    /// use std::ops::Mul;
+    /// use gs_ppe::{setup, CommitmentKeys, Equation, Matrix, Variable};
+    ///
+    /// type G1 = <E as Pairing>::G1;
+    /// type G2 = <E as Pairing>::G2;
+    /// type G1Affine = <E as Pairing>::G1Affine;
+    /// type G2Affine = <E as Pairing>::G2Affine;
+    /// type Fr = <E as Pairing>::ScalarField;
+    ///
+    /// let rng = &mut test_rng();
+    /// let (a, b) = (G1Affine::rand(rng), G2Affine::rand(rng));
+    /// let (x_value, y_value) = (G1Affine::rand(rng), G2Affine::rand(rng));
+    /// let (x, y) = (
+    ///     Variable::<G1>::new(rng, x_value),
+    ///     Variable::<G2>::new(rng, y_value),
+    /// );
+    /// let gamma = Matrix::<Fr>::rand(rng, 1, 1);
+    ///
+    /// let cks = CommitmentKeys::<E>::rand(rng);
+    ///
+    /// // Setup Proof System over Pairing Product Equation:
+    /// // e(a, y) + e(x, b) + e(x, y)^gamma = T
+    /// let proof_system = setup(rng, &cks, &[(a, y)], &[(x, b)], &gamma);
+    ///
+    /// // Explicitly create the equation:
+    /// // e(a, y) + e(x, b) + e(x, y)^gamma = T
+    /// let target = E::pairing(a, y_value)
+    ///     + E::pairing(x_value, b)
+    ///     + E::pairing(x_value, y_value).mul(gamma[(0, 0)]);
+    /// let equation = Equation::<E>::new(vec![a], vec![b], gamma, target);
+    ///
+    /// assert_eq!(equation, proof_system.equation);
+    /// assert!(equation.verify(&cks, &proof_system.c, &proof_system.d, &proof_system.proof));
+    /// ```
     pub fn verify(
         &self,
-        u: &CommitmentKey<<E as Pairing>::G1>,
-        v: &CommitmentKey<<E as Pairing>::G2>,
+        cks: &CommitmentKeys<E>,
         c: &[Com<<E as Pairing>::G1>],
         d: &[Com<<E as Pairing>::G2>],
         proof: &Proof<E>,
@@ -30,8 +110,11 @@ impl<E: Pairing> Equation<E> {
         {
             return false;
         }
+        let u = &cks.u;
+        let v = &cks.v;
 
-        // Check Equation 1
+        // Check Equation 1:
+        // Π e(c_i1, Π d_j1^gamma_ij) = e(u11, φ11) e(u21, φ21) e(θ11, v11) e(θ21, v21)
         let lhs = c
             .iter()
             .enumerate()
@@ -55,7 +138,8 @@ impl<E: Pairing> Equation<E> {
             return false;
         }
 
-        // Check Equation 2
+        // Check Equation 2:
+        // Π e(c_i1, b_i Π d_j2^gamma_ij) = e(u11, φ12) e(u21, φ22) e(θ11, v12) e(θ21, v22)
         let lhs = c
             .iter()
             .enumerate()
@@ -78,7 +162,8 @@ impl<E: Pairing> Equation<E> {
             return false;
         }
 
-        // Check Equation 3
+        // Check Equation 3:
+        // Π e(a_j Π c_i2^gamma_ij, d_j1) = e(u12, φ11) e(u22, φ21) e(θ12, v11) e(θ22, v21)
         let lhs = d
             .iter()
             .enumerate()
@@ -101,7 +186,8 @@ impl<E: Pairing> Equation<E> {
             return false;
         }
 
-        // Check Equation 4
+        // Check Equation 4:
+        // Π e(a_j, d_j2) Π e(c_i2, b_i Π d_j2^gamma_ij) = t_T e(u12, φ12) e(u22, φ22) e(θ12, v12) e(θ22, v22)
         let lhs = {
             let a_d = self
                 .a

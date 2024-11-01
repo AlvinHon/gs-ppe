@@ -11,33 +11,6 @@ type G2Affine = <F as Pairing>::G2Affine;
 type Fr = <F as Pairing>::ScalarField;
 
 #[test]
-fn test_proof() {
-    let rng = &mut test_rng();
-    let (a, b) = (G1Affine::rand(rng), G2Affine::rand(rng));
-    let (x_value, y_value) = (G1Affine::rand(rng), G2Affine::rand(rng));
-    let (x, y) = (
-        Variable::<G1>::new(rng, x_value),
-        Variable::<G2>::new(rng, y_value),
-    );
-    let gamma = Matrix::<Fr>::rand(rng, 1, 1);
-
-    let cks = CommitmentKeys::<F>::rand(rng);
-
-    // Setup Proof System over Pairing Product Equation:
-    // e(a, y) + e(x, b) + e(x, y)^gamma = T
-    let proof_system = setup(rng, &cks, &[(a, y)], &[(x, b)], &gamma);
-
-    let ProofSystem {
-        equation,
-        c,
-        d,
-        proof,
-    } = proof_system;
-
-    assert!(equation.verify(&cks.u, &cks.v, &c, &d, &proof));
-}
-
-#[test]
 fn test_proof_m_x_n() {
     let rng = &mut test_rng();
     let n = 3;
@@ -70,34 +43,7 @@ fn test_proof_m_x_n() {
         proof,
     } = proof_system;
 
-    assert!(equation.verify(&cks.u, &cks.v, &c, &d, &proof));
-}
-
-#[test]
-fn test_randomized_proof() {
-    let rng = &mut test_rng();
-    let (a, b) = (G1Affine::rand(rng), G2Affine::rand(rng));
-    let (x_value, y_value) = (G1Affine::rand(rng), G2Affine::rand(rng));
-    let (x, y) = (
-        Variable::<G1>::new(rng, x_value),
-        Variable::<G2>::new(rng, y_value),
-    );
-    let gamma = Matrix::<Fr>::rand(rng, 1, 1);
-
-    let cks = CommitmentKeys::<F>::rand(rng);
-
-    // Setup Proof System over Pairing Product Equation:
-    // e(a, y) + e(x, b) + e(x, y)^gamma = T
-    let proof_system = setup(rng, &cks, &[(a, y)], &[(x, b)], &gamma);
-
-    let ProofSystem {
-        equation,
-        c,
-        d,
-        proof,
-    } = proof_system.randomize(rng, &cks);
-
-    assert!(equation.verify(&cks.u, &cks.v, &c, &d, &proof));
+    assert!(equation.verify(&cks, &c, &d, &proof));
 }
 
 #[test]
@@ -133,5 +79,5 @@ fn test_randomized_proof_m_x_n() {
         proof,
     } = proof_system.randomize(rng, &cks);
 
-    assert!(equation.verify(&cks.u, &cks.v, &c, &d, &proof));
+    assert!(equation.verify(&cks, &c, &d, &proof));
 }

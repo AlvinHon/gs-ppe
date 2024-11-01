@@ -29,6 +29,17 @@ use ark_ff::Zero;
 use ark_std::rand::Rng;
 use std::ops::Mul;
 
+/// Setup the proof system over the Pairing Product Equation:
+///
+/// ∏e(a, y) ∏e(x, b) ∏e(x, y)^gamma = T
+///
+/// where `a` and `b` are the public constants, `x` and `y` are the private variables,
+/// and `gamma` is the matrix of the exponents.
+///
+/// It returns the Proof System that contains the equation, commitments, and the proof.
+///
+/// ## Panics
+/// Panics if dimension of gamma does not match the length of `xb` and `ay`. i.e. gamma.dim() != (xb.len(), ay.len())
 pub fn setup<E: Pairing, R: Rng>(
     rng: &mut R,
     cks: &CommitmentKeys<E>,
@@ -45,8 +56,8 @@ pub fn setup<E: Pairing, R: Rng>(
         acc + E::pairing(x.value, b)
     });
 
-    let x: Vec<Variable<_>> = xb.iter().map(|(x, _)| x.clone()).collect();
-    let y: Vec<Variable<_>> = ay.iter().map(|(_, y)| y.clone()).collect();
+    let x: Vec<Variable<_>> = xb.iter().map(|(x, _)| *x).collect();
+    let y: Vec<Variable<_>> = ay.iter().map(|(_, y)| *y).collect();
 
     let mut xy_product = PairingOutput::zero();
     for (j, y_j) in y.iter().enumerate() {
@@ -76,6 +87,11 @@ pub fn setup<E: Pairing, R: Rng>(
     }
 }
 
+/// The Proof System over the Pairing Product Equation. It consists of
+/// - The specified pairing product `equation`.
+/// - The commitments `c` and `d` which commit to the variables `x` and `y` respectively.
+/// - The `proof` for proving `c` and `d` are committing to the variables `x` and `y` satisfying the `equation`.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ProofSystem<E: Pairing> {
     pub equation: Equation<E>,
     pub c: Vec<Com<<E as Pairing>::G1>>,
@@ -84,6 +100,8 @@ pub struct ProofSystem<E: Pairing> {
 }
 
 impl<E: Pairing> ProofSystem<E> {
+    /// Randomize the commitments `c` and `d` and the proof by applying the functions `RdCom` and `RdProof`
+    /// define in the paper [Fuc10](https://eprint.iacr.org/2010/233.pdf).
     pub fn randomize<R: Rng>(mut self, rng: &mut R, cks: &CommitmentKeys<E>) -> Self {
         let cr = self
             .c
@@ -96,7 +114,7 @@ impl<E: Pairing> ProofSystem<E> {
             .map(|d_j| d_j.randomize(rng, &cks.v))
             .collect::<Vec<_>>();
 
-        self.proof.randomize(rng, &cks, &self.equation, &cr, &ds);
+        self.proof.randomize(rng, cks, &self.equation, &cr, &ds);
         self
     }
 }

@@ -1,3 +1,5 @@
+//! Provides a struct [Matrix] type that wraps around [ndarray::Array] for matrix operations required in the GS Proof.
+
 use std::ops::{Add, Index};
 
 use ark_ff::{UniformRand, Zero};

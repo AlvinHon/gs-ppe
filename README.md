@@ -36,7 +36,22 @@ let ProofSystem {
     d,
     proof,
 } = setup(rng, &cks, &[(a, y)], &[(x, b)], &gamma);
-assert!(equation.verify(&cks.u, &cks.v, &c, &d, &proof));
+assert!(equation.verify(&cks, &c, &d, &proof));
+```
+
+## Prove that you know `X` and `Y` in the equation
+
+I only know the value of the constants `a`, `b`, `γ` and the output of the Pairing Product `t_Τ`. So I can construct the
+`equation` like this:
+
+```rust ignore
+let equation = Equation::<F>::new(vec![a], vec![b], gamma, target);
+```
+
+We choose using the same commitment keys in the proof system. You then give me the `c` and `d`, the commitments to the hidden variables `X` and `Y`, together with the `proof`. Again, I can simply call the verification method like this:
+
+```rust ignore
+equation.verify(&cks, &c, &d, &proof);
 ```
 
 ## Randomization
@@ -54,7 +69,7 @@ let ProofSystem {
     proof, // a randomized `proof`
 } = proof_system.randomize(rng, &cks);
 
-assert!(equation.verify(&cks.u, &cks.v, &c, &d, &proof));
+assert!(equation.verify(&cks, &c, &d, &proof));
 ```
 
 ## Reference:

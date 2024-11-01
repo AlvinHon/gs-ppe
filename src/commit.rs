@@ -1,3 +1,5 @@
+//! Defines the struct [CommitmentKeys], the commitment key `ck` for `SXDH Commitments`` defined in section 6.2 in the paper [Fuc10](https://eprint.iacr.org/2010/233.pdf).
+
 use ark_ec::{pairing::Pairing, CurveGroup};
 use ark_ff::One;
 use ark_std::{rand::Rng, UniformRand};
@@ -5,18 +7,24 @@ use std::ops::{Mul, Sub};
 
 use crate::{com::Com, randomness::Randomness, variable::Variable, ExtractKey};
 
+/// Contains commitment keys `u` and `v` for the `SXDH Commitments`, where
+/// `u` and `v` belong to Group G1 and G2 respectively.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CommitmentKeys<E: Pairing> {
     pub u: CommitmentKey<E::G1>,
     pub v: CommitmentKey<E::G2>,
 }
 
 impl<E: Pairing> CommitmentKeys<E> {
+    /// Generates random commitment keys for standard setup of Commitment Scheme.
     pub fn rand<R: Rng>(rng: &mut R) -> CommitmentKeys<E> {
         let g1 = E::G1Affine::rand(rng);
         let g2 = E::G2Affine::rand(rng);
         Self::setup(rng, g1, g2)
     }
 
+    /// Generates random commitment keys for standard setup of Commitment Scheme,
+    /// given the generators `g1` and `g2`.
     pub fn setup<R: Rng>(
         rng: &mut R,
         g1: <E as Pairing>::G1Affine,
@@ -29,12 +37,16 @@ impl<E: Pairing> CommitmentKeys<E> {
         CommitmentKeys::new(g1, g2, a1, a2, t1, t2)
     }
 
+    /// Generates random commitment keys for standard setup of Commitment Scheme,
+    /// and in addition, returns the extract key.
     pub fn rand_ex<R: Rng>(rng: &mut R) -> (CommitmentKeys<E>, ExtractKey<E>) {
         let g1 = E::G1Affine::rand(rng);
         let g2 = E::G2Affine::rand(rng);
         Self::setup_ex(rng, g1, g2)
     }
 
+    /// Construct commitment keys for standard setup and in addition returns the extract key,
+    /// given the generators `g1` and `g2`.
     pub fn setup_ex<R: Rng>(
         rng: &mut R,
         g1: <E as Pairing>::G1Affine,
@@ -50,12 +62,16 @@ impl<E: Pairing> CommitmentKeys<E> {
         )
     }
 
+    /// Generates random commitment keys for perfectly hiding setup (also indistinguishable
+    /// by SDXH) of Commitment Scheme.
     pub fn rand_wi<R: Rng>(rng: &mut R) -> CommitmentKeys<E> {
         let g1 = E::G1Affine::rand(rng);
         let g2 = E::G2Affine::rand(rng);
         Self::setup_wi(rng, g1, g2)
     }
 
+    /// Generates random commitment keys for perfectly hiding setup (also indistinguishable
+    /// by SDXH) of Commitment Scheme, given the generators `g1` and `g2`.
     pub fn setup_wi<R: Rng>(
         rng: &mut R,
         g1: <E as Pairing>::G1Affine,
@@ -68,6 +84,7 @@ impl<E: Pairing> CommitmentKeys<E> {
         CommitmentKeys::new_wi(g1, g2, a1, a2, t1, t2)
     }
 
+    /// Implements the `Setup` function in section 6.2 of the paper.
     fn new(
         g1: <E as Pairing>::G1Affine,
         g2: <E as Pairing>::G2Affine,
@@ -91,6 +108,7 @@ impl<E: Pairing> CommitmentKeys<E> {
         }
     }
 
+    /// Implements the `WISetup` function in section 6.2 of the paper.
     fn new_wi(
         g1: <E as Pairing>::G1Affine,
         g2: <E as Pairing>::G2Affine,
@@ -120,13 +138,18 @@ impl<E: Pairing> CommitmentKeys<E> {
     }
 }
 
+/// The component in commitment keys, either `u` or `v` in [CommitmentKeys].
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CommitmentKey<G: CurveGroup>(pub (G::Affine, G::Affine), pub (G::Affine, G::Affine));
 
 impl<G: CurveGroup> CommitmentKey<G> {
+    /// The commitment function `Com`. Returns the commitment of the variable `x` or `y` according to
+    /// which group G the commitment key belongs to.
     pub fn commit(&self, x: &Variable<G>) -> Com<G> {
         let Randomness(r1, r2) = x.rand;
         let x = x.value;
 
+        // Com(ck, X, r) = (u11^r1 + u21^r2, x + u12^r1 + u22^r2)
         let a = self.0 .0.mul(r1) + self.1 .0.mul(r2);
         let b = self.0 .1.mul(r1) + self.1 .1.mul(r2);
         Com(a.into(), (x + b).into())
