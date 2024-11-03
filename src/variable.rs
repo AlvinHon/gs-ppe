@@ -2,7 +2,6 @@
 //! i.e. the (`X`, `r`) and (`Y`, `s`) notated in the paper.
 
 use ark_ec::CurveGroup;
-use ark_ff::Zero;
 use ark_std::rand::Rng;
 
 use crate::Randomness;
@@ -18,16 +17,18 @@ pub struct Variable<G: CurveGroup> {
 impl<G: CurveGroup> Variable<G> {
     /// Constructs a new variable `X` or `Y` with the given `value` and internal randomness `r` or `s`.
     pub fn new<R: Rng>(rng: &mut R, value: G::Affine) -> Self {
-        let rand = Randomness::rand(rng);
-        Self { value, rand }
+        Self::with_randomness(value, Randomness::rand(rng))
     }
 
     /// Constructs a new variable `X` or `Y` with the given `value` and internal randomness `r` or `s`,
     /// where the randomness is set to zero.
     pub fn with_zero_randomness(value: G::Affine) -> Self {
-        Self {
-            value,
-            rand: Randomness(G::ScalarField::zero(), G::ScalarField::zero()),
-        }
+        Self::with_randomness(value, Randomness::zero())
+    }
+
+    /// Constructs a new variable `X` or `Y` with the given `value` and internal randomness `r` or `s`,
+    /// where the randomness is set to the given randomness.
+    pub fn with_randomness(value: G::Affine, rand: Randomness<G>) -> Self {
+        Self { value, rand }
     }
 }

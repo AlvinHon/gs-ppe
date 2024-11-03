@@ -4,6 +4,7 @@
 use std::ops::Add;
 
 use ark_ec::Group;
+use ark_ff::Zero;
 use ark_std::{rand::Rng, UniformRand};
 
 /// Randomness used in the entire scheme. i.e. the `r` and `s`.
@@ -14,6 +15,11 @@ impl<G: Group> Randomness<G> {
     /// Generates a random `Randomness` using the given `rng`.
     pub fn rand<R: Rng>(rng: &mut R) -> Self {
         Self(G::ScalarField::rand(rng), G::ScalarField::rand(rng))
+    }
+
+    /// Returns a `Randomness` with both fields set to zero.
+    pub fn zero() -> Self {
+        Self(G::ScalarField::zero(), G::ScalarField::zero())
     }
 }
 
