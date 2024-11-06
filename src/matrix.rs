@@ -1,6 +1,6 @@
 //! Provides a struct [Matrix] type that wraps around [ndarray::Array] for matrix operations required in the GS Proof.
 
-use std::ops::{Add, Index};
+use std::ops::{Add, Index, Mul, Neg};
 
 use ark_ff::{UniformRand, Zero};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Valid};
@@ -32,6 +32,12 @@ where
     {
         Self {
             inner: Array::zeros((0, n)),
+        }
+    }
+
+    pub fn from_elem(rows: usize, cols: usize, elem: F) -> Self {
+        Self {
+            inner: Array::from_elem((rows, cols), elem),
         }
     }
 
@@ -147,15 +153,43 @@ where
     }
 }
 
-impl<F> Add for Matrix<F>
+impl<F, K> Add<Matrix<K>> for Matrix<F>
 where
-    F: Clone + Add<Output = F>,
+    F: Clone + Add<K, Output = F>,
+    K: Clone,
 {
     type Output = Self;
 
-    fn add(self, rhs: Self) -> Self::Output {
+    fn add(self, rhs: Matrix<K>) -> Self::Output {
         Self {
             inner: self.inner + rhs.inner,
+        }
+    }
+}
+
+impl<F, K> Mul<Matrix<K>> for Matrix<F>
+where
+    F: Clone + Mul<K, Output = F>,
+    K: Clone,
+{
+    type Output = Self;
+
+    fn mul(self, rhs: Matrix<K>) -> Self::Output {
+        Self {
+            inner: self.inner.mul(rhs.inner),
+        }
+    }
+}
+
+impl<F> Neg for Matrix<F>
+where
+    F: Clone + Neg<Output = F>,
+{
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self {
+            inner: self.inner.mapv(|x| -x),
         }
     }
 }
