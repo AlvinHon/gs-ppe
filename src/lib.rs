@@ -31,7 +31,7 @@ use std::ops::Mul;
 
 /// Setup the proof system over the Pairing Product Equation:
 ///
-/// ∏e(a, y) ∏e(x, b) ∏e(x, y)^gamma = T
+/// ∏e(a, y) ∏e(x, b) ∏∏e(x, y)^gamma = T
 ///
 /// where `a` and `b` are the public constants, `x` and `y` are the private variables,
 /// and `gamma` is the matrix of the exponents.

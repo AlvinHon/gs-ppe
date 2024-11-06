@@ -47,6 +47,54 @@ fn test_proof_m_x_n() {
 }
 
 #[test]
+fn test_proof_m_zero() {
+    let rng = &mut test_rng();
+    let x_value = G1Affine::rand(rng);
+    let x = Variable::new(rng, x_value);
+    let b = G2Affine::rand(rng);
+    let gamma = Matrix::<Fr>::new(&[[]]); // dim = (1, 0)
+
+    let cks = CommitmentKeys::<F>::rand(rng);
+
+    // Setup Proof System over Pairing Product Equation:
+    // ∏e(x, b) = T
+    let proof_system = setup(rng, &cks, &[], &[(x, b)], &gamma);
+
+    let ProofSystem {
+        equation,
+        c,
+        d,
+        proof,
+    } = proof_system;
+
+    assert!(equation.verify(&cks, &c, &d, &proof));
+}
+
+#[test]
+fn test_proof_n_zero() {
+    let rng = &mut test_rng();
+    let y_value = G2Affine::rand(rng);
+    let y = Variable::new(rng, y_value);
+    let a = G1Affine::rand(rng);
+    let gamma = Matrix::<Fr>::zeros_column(1); // dim = (0, 1)
+
+    let cks = CommitmentKeys::<F>::rand(rng);
+
+    // Setup Proof System over Pairing Product Equation:
+    // ∏e(a, y) = T
+    let proof_system = setup(rng, &cks, &[(a, y)], &[], &gamma);
+
+    let ProofSystem {
+        equation,
+        c,
+        d,
+        proof,
+    } = proof_system;
+
+    assert!(equation.verify(&cks, &c, &d, &proof));
+}
+
+#[test]
 fn test_randomized_proof_m_x_n() {
     let rng = &mut test_rng();
     let n = 3;
