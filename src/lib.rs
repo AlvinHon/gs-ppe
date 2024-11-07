@@ -125,8 +125,8 @@ impl<E: Pairing> Add for ProofSystem<E> {
 
     fn add(self, other: Self) -> Self {
         let equation = self.equation + other.equation;
-        let c = self.c.into_iter().chain(other.c.into_iter()).collect();
-        let d = self.d.into_iter().chain(other.d.into_iter()).collect();
+        let c = self.c.into_iter().chain(other.c).collect();
+        let d = self.d.into_iter().chain(other.d).collect();
         let proof = self.proof + other.proof;
         ProofSystem {
             equation,
