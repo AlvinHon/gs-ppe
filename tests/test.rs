@@ -129,3 +129,51 @@ fn test_randomized_proof_m_x_n() {
 
     assert!(equation.verify(&cks, &c, &d, &proof));
 }
+
+#[test]
+fn test_homomorphic_proofs() {
+    let rng = &mut test_rng();
+    let cks = CommitmentKeys::<F>::rand(rng);
+
+    // Setup a Proof System.
+    let (a, b) = (G1Affine::rand(rng), G2Affine::rand(rng));
+    let (x_value, y_value) = (G1Affine::rand(rng), G2Affine::rand(rng));
+    let (x, y) = (
+        Variable::<G1>::new(rng, x_value),
+        Variable::<G2>::new(rng, y_value),
+    );
+    let gamma = Matrix::<Fr>::rand(rng, 1, 1);
+    let proof_system_1 = setup(rng, &cks, &[(a, y)], &[(x, b)], &gamma);
+    assert!(proof_system_1.equation.verify(
+        &cks,
+        &proof_system_1.c,
+        &proof_system_1.d,
+        &proof_system_1.proof
+    ));
+
+    // Setup another Proof System.
+    let (a_p, b_p) = (G1Affine::rand(rng), G2Affine::rand(rng));
+    let (x_p_value, y_p_value) = (G1Affine::rand(rng), G2Affine::rand(rng));
+    let (x_p, y_p) = (
+        Variable::<G1>::new(rng, x_p_value),
+        Variable::<G2>::new(rng, y_p_value),
+    );
+    let gamma_p = Matrix::<Fr>::rand(rng, 1, 1);
+    let proof_system_2 = setup(rng, &cks, &[(a_p, y_p)], &[(x_p, b_p)], &gamma_p);
+    assert!(proof_system_2.equation.verify(
+        &cks,
+        &proof_system_2.c,
+        &proof_system_2.d,
+        &proof_system_2.proof
+    ));
+
+    // Homomorphic property of the commitment. It should be equavalent to the proof of the equation:
+    // e(a, y) + a(a', y') + e(x, b) + e(x', b') + e(x, y)^gamma + e(x', y')^gamma' = T + T'
+    let proof_system_sum = proof_system_1 + proof_system_2;
+    assert!(proof_system_sum.equation.verify(
+        &cks,
+        &proof_system_sum.c,
+        &proof_system_sum.d,
+        &proof_system_sum.proof
+    ));
+}

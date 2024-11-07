@@ -27,7 +27,7 @@ pub use variable::Variable;
 use ark_ec::pairing::{Pairing, PairingOutput};
 use ark_ff::Zero;
 use ark_std::rand::Rng;
-use std::ops::Mul;
+use std::ops::{Add, Mul};
 
 /// Setup the proof system over the Pairing Product Equation:
 ///
@@ -116,5 +116,23 @@ impl<E: Pairing> ProofSystem<E> {
 
         self.proof.randomize(rng, cks, &self.equation, &cr, &ds);
         self
+    }
+}
+
+/// Homomorphic addition of two Proof Systems, defined in section 7.2 of the paper.
+impl<E: Pairing> Add for ProofSystem<E> {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        let equation = self.equation + other.equation;
+        let c = self.c.into_iter().chain(other.c.into_iter()).collect();
+        let d = self.d.into_iter().chain(other.d.into_iter()).collect();
+        let proof = self.proof + other.proof;
+        ProofSystem {
+            equation,
+            c,
+            d,
+            proof,
+        }
     }
 }

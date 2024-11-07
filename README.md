@@ -9,9 +9,9 @@ This work uses cryptographic libraries provided by the rust ecosystem [Arkworks]
 ## Prove that I know `X` and `Y` in this equation:
 
 ```math
-\left( \prod_{j=1}^n e(A_j, Y_j) \right) 
-\left( \prod_{i=1}^m e(X_i, B_i) \right)
-\left( \prod_{i=1}^m \prod_{j=1}^n e(X_i, Y_j)^{γ_{ij}} \right)
+\prod_{j=1}^n e(A_j, Y_j)
+\prod_{i=1}^m e(X_i, B_i)
+\prod_{i=1}^m \prod_{j=1}^n e(X_i, Y_j)^{γ_{ij}}
 = 
 t_Τ
 ```
@@ -69,6 +69,37 @@ let ProofSystem {
     proof, // a randomized `proof`
 } = proof_system.randomize(rng, &cks);
 
+assert!(equation.verify(&cks, &c, &d, &proof));
+```
+
+## Homomorphism 
+
+Groth-Sahai Proofs are homomorphic. Given the equations `E` and `E'` under the same commitment key, the combined commitments `(c, d) + (c', d')` and the proofs `π + π'` give you a proof system with equation `E" = E + E'` like this:
+
+```math
+\prod_{j=1}^n e(A_j, Y_j)
+\prod_{j=1}^{n'} e(A_j', Y_j')
+\prod_{i=1}^m e(X_i, B_i)
+\prod_{i=1}^{m'} e(X_i', B_i')
+\prod_{i=1}^m \prod_{j=1}^n e(X_i, Y_j)^{γ_{ij}}
+\prod_{i=1}^{m'} \prod_{j=1}^{n'} e(X_i', Y_j')^{γ'_{ij}}
+= 
+t_Τ + t_Τ'
+```
+
+To do that, simply add up those components. For convenience, the struct `ProofSystem` implements the trait `std::ops::Add` to add up those components at once.
+
+```rust ignore
+let cks = CommitmentKeys::<F>::rand(rng);
+let proof_system_1 = setup(rng, &cks, &[(a, y)], &[(x, b)], &gamma);
+let proof_system_2 = setup(rng, &cks, &[(a_p, y_p)], &[(x_p, b_p)], &gamma_p);
+
+let  ProofSystem {
+    equation, // E"
+    c, // [c, c']
+    d, // [d, d']
+    proof, // π + π'
+} = proof_system_1 + proof_system_2;
 assert!(equation.verify(&cks, &c, &d, &proof));
 ```
 

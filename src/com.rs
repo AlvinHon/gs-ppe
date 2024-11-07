@@ -31,9 +31,6 @@ impl<G: CurveGroup> Com<G> {
     }
 }
 
-// TODO implement homonorphic properties of the commitment
-// "Remark3. Commitments are homomorphic: Com(ck, X, r) + Com(ck, X', r') = Com(ck, X + X', r+r');"
-
 impl<G: CurveGroup> Add for Com<G> {
     type Output = Self;
 

@@ -1,6 +1,6 @@
 //! Provides a struct [Matrix] type that wraps around [ndarray::Array] for matrix operations required in the GS Proof.
 
-use std::ops::{Add, Index, Mul, Neg};
+use std::ops::{Add, Index, IndexMut, Mul, Neg};
 
 use ark_ff::{UniformRand, Zero};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Valid};
@@ -76,6 +76,10 @@ where
         }
     }
 
+    pub fn take(self) -> Array<F, Ix2> {
+        self.inner
+    }
+
     #[inline]
     pub fn dim(&self) -> (usize, usize) {
         self.inner.dim()
@@ -111,6 +115,15 @@ where
 
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         &self.inner[index]
+    }
+}
+
+impl<F> IndexMut<(usize, usize)> for Matrix<F>
+where
+    F: Clone,
+{
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        &mut self.inner[index]
     }
 }
 

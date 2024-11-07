@@ -2,7 +2,7 @@
 
 use ark_ec::pairing::{Pairing, PairingOutput};
 use ark_ff::Zero;
-use std::ops::Mul;
+use std::ops::{Add, Mul};
 
 use crate::{Com, CommitmentKeys, Matrix, Proof};
 
@@ -220,5 +220,48 @@ impl<E: Pairing> Equation<E> {
             + E::pairing(proof.theta[(1, 1)], v.1 .1);
 
         lhs == rhs
+    }
+}
+
+impl<E: Pairing> Add for Equation<E> {
+    type Output = Self;
+
+    fn add(self, mut rhs: Self) -> Self {
+        let Equation {
+            mut a,
+            mut b,
+            gamma,
+            mut target,
+        } = self;
+
+        a.append(&mut rhs.a);
+        b.append(&mut rhs.b);
+
+        target += rhs.target;
+
+        // Compute [[ gamma1, 0], [0, gamma2]]
+        let gamma = {
+            let (m, n) = gamma.dim();
+            let (m_prime, n_prime) = rhs.gamma.dim();
+            let mut gamma1 = gamma.take();
+            let gamma22 = rhs.gamma.take();
+
+            let zeros12 = ndarray::Array2::from_elem((m_prime, n_prime), E::ScalarField::zero());
+            let mut gamma2 = ndarray::Array2::from_elem((m, n), E::ScalarField::zero());
+
+            gamma1.append(ndarray::Axis(1), zeros12.view()).unwrap();
+            gamma2.append(ndarray::Axis(1), gamma22.view()).unwrap();
+
+            gamma1.append(ndarray::Axis(0), gamma2.view()).unwrap();
+
+            Matrix::from(gamma1)
+        };
+
+        Self {
+            a,
+            b,
+            gamma,
+            target,
+        }
     }
 }
