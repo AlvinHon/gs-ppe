@@ -4,7 +4,7 @@
 use ark_ec::pairing::Pairing;
 use ark_ff::Zero;
 use ark_std::rand::Rng;
-use std::ops::{Add, Mul, Neg};
+use std::ops::{Add, Div, Mul, Neg};
 
 use crate::{
     com::ComRandomness, commit::CommitmentKey, CommitmentKeys, Equation, Matrix, Randomness,
@@ -439,6 +439,21 @@ impl<E: Pairing> Add for Proof<E> {
         let phi = self.phi.into::<<E as Pairing>::G2>() + other.phi.into::<<E as Pairing>::G2>();
         let theta =
             self.theta.into::<<E as Pairing>::G1>() + other.theta.into::<<E as Pairing>::G1>();
+        Proof {
+            phi: phi.into(),
+            theta: theta.into(),
+        }
+    }
+}
+
+impl<E: Pairing> Div for Proof<E> {
+    type Output = Self;
+
+    fn div(self, other: Self) -> Self {
+        let phi =
+            self.phi.into::<<E as Pairing>::G2>() + other.phi.into::<<E as Pairing>::G2>().neg();
+        let theta = self.theta.into::<<E as Pairing>::G1>()
+            + other.theta.into::<<E as Pairing>::G1>().neg();
         Proof {
             phi: phi.into(),
             theta: theta.into(),

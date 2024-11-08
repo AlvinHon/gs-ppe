@@ -94,7 +94,7 @@ let cks = CommitmentKeys::<F>::rand(rng);
 let proof_system_1 = setup(rng, &cks, &[(a, y)], &[(x, b)], &gamma);
 let proof_system_2 = setup(rng, &cks, &[(a_p, y_p)], &[(x_p, b_p)], &gamma_p);
 
-let  ProofSystem {
+let ProofSystem {
     equation, // E"
     c, // [c, c']
     d, // [d, d']
