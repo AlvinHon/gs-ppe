@@ -1,7 +1,7 @@
 //! Defines the struct [Equation], the equation `E` notated in section 6.3 in the paper [Fuc10](https://eprint.iacr.org/2010/233.pdf).
 
 use ark_ec::pairing::{Pairing, PairingOutput};
-use ark_ff::Zero;
+use ark_std::Zero;
 use std::ops::{Add, Mul};
 
 use crate::{Com, CommitmentKeys, Matrix, Proof};

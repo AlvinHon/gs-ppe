@@ -1,8 +1,7 @@
 //! Defines the struct [CommitmentKeys], the commitment key `ck` for `SXDH Commitments`` defined in section 6.2 in the paper [Fuc10](https://eprint.iacr.org/2010/233.pdf).
 
 use ark_ec::{pairing::Pairing, CurveGroup};
-use ark_ff::One;
-use ark_std::{rand::Rng, UniformRand};
+use ark_std::{rand::Rng, One, UniformRand};
 use std::ops::{Mul, Sub};
 
 use crate::{com::Com, randomness::Randomness, variable::Variable, ExtractKey};

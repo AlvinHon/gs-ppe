@@ -2,9 +2,8 @@
 
 use std::ops::{Add, Index, IndexMut, Mul, Neg};
 
-use ark_ff::{UniformRand, Zero};
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize, Valid};
-use ark_std::rand::Rng;
+use ark_std::{rand::Rng, UniformRand, Zero};
 use ndarray::{Array, Ix2};
 
 #[derive(Clone, Debug, PartialEq, Eq)]

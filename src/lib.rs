@@ -25,8 +25,7 @@ pub mod variable;
 pub use variable::Variable;
 
 use ark_ec::pairing::{Pairing, PairingOutput};
-use ark_ff::Zero;
-use ark_std::rand::Rng;
+use ark_std::{rand::Rng, Zero};
 use std::ops::{Add, Mul};
 
 /// Setup the proof system over the Pairing Product Equation:

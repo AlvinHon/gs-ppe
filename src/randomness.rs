@@ -3,15 +3,14 @@
 
 use std::ops::Add;
 
-use ark_ec::Group;
-use ark_ff::Zero;
-use ark_std::{rand::Rng, UniformRand};
+use ark_ec::PrimeGroup;
+use ark_std::{rand::Rng, UniformRand, Zero};
 
 /// Randomness used in the entire scheme. i.e. the `r` and `s`.
 #[derive(Copy, Clone, Debug)]
-pub struct Randomness<G: Group>(pub G::ScalarField, pub G::ScalarField);
+pub struct Randomness<G: PrimeGroup>(pub G::ScalarField, pub G::ScalarField);
 
-impl<G: Group> Randomness<G> {
+impl<G: PrimeGroup> Randomness<G> {
     /// Generates a random `Randomness` using the given `rng`.
     pub fn rand<R: Rng>(rng: &mut R) -> Self {
         Self(G::ScalarField::rand(rng), G::ScalarField::rand(rng))
@@ -23,7 +22,7 @@ impl<G: Group> Randomness<G> {
     }
 }
 
-impl<G: Group> Add for Randomness<G> {
+impl<G: PrimeGroup> Add for Randomness<G> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {

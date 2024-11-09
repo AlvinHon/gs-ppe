@@ -2,8 +2,7 @@
 //! in the paper [Fuc10](https://eprint.iacr.org/2010/233.pdf).
 
 use ark_ec::pairing::Pairing;
-use ark_ff::Zero;
-use ark_std::rand::Rng;
+use ark_std::{rand::Rng, Zero};
 use std::ops::{Add, Div, Mul, Neg};
 
 use crate::{
