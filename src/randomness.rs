@@ -1,7 +1,7 @@
 //! Defines the struct [Randomness], the randomness commonly used in the entire scheme. i.e. the `r` and `s`
 //! notated in the paper.
 
-use std::ops::Add;
+use std::ops::{Add, Neg};
 
 use ark_ec::PrimeGroup;
 use ark_std::{rand::Rng, UniformRand, Zero};
@@ -27,5 +27,13 @@ impl<G: PrimeGroup> Add for Randomness<G> {
 
     fn add(self, other: Self) -> Self {
         Self(self.0 + other.0, self.1 + other.1)
+    }
+}
+
+impl<G: PrimeGroup> Neg for Randomness<G> {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Self(-self.0, -self.1)
     }
 }
