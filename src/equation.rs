@@ -138,21 +138,26 @@ impl<E: Pairing> Equation<E> {
             return false;
         }
 
+        // create pre-calculated value b_i Π d_j2^gamma_ij for equation 2 and 4 for efficiency.
+        let b_d = c.iter().enumerate().fold(Vec::new(), |mut acc, (i, _)| {
+            let d_product = d
+                .iter()
+                .enumerate()
+                .fold(<E as Pairing>::G2::zero(), |acc, (j, d_j)| {
+                    acc + d_j.1.mul(self.gamma[(i, j)])
+                })
+                .into();
+            acc.push(self.b[i] + d_product);
+            acc
+        });
+
         // Check Equation 2:
         // Π e(c_i1, b_i Π d_j2^gamma_ij) = e(u11, φ12) e(u21, φ22) e(θ11, v12) e(θ21, v22)
         let lhs = c
             .iter()
             .enumerate()
             .fold(PairingOutput::zero(), |acc, (i, c_i)| {
-                let d_product = d
-                    .iter()
-                    .enumerate()
-                    .fold(<E as Pairing>::G2::zero(), |acc, (j, d_j)| {
-                        acc + d_j.1.mul(self.gamma[(i, j)])
-                    })
-                    .into();
-
-                acc + E::pairing(c_i.0, self.b[i] + d_product)
+                acc + E::pairing(c_i.0, b_d[i])
             });
         let rhs = E::pairing(u.0 .0, proof.phi[(0, 1)])
             + E::pairing(u.1 .0, proof.phi[(1, 1)])
@@ -196,20 +201,11 @@ impl<E: Pairing> Equation<E> {
                 .fold(PairingOutput::zero(), |acc, (a_j, d_j)| {
                     acc + E::pairing(a_j, d_j.1)
                 });
-            // TODO: optimize this - the 'bd' part was computed before
             let c_bd = c
                 .iter()
                 .enumerate()
                 .fold(PairingOutput::zero(), |acc, (i, c_i)| {
-                    let d_product = d
-                        .iter()
-                        .enumerate()
-                        .fold(<E as Pairing>::G2::zero(), |acc, (j, d_j)| {
-                            acc + d_j.1.mul(self.gamma[(i, j)])
-                        })
-                        .into();
-
-                    acc + E::pairing(c_i.1, self.b[i] + d_product)
+                    acc + E::pairing(c_i.1, b_d[i])
                 });
             a_d + c_bd
         };
