@@ -21,3 +21,8 @@ ndarray = { version = "^0.16", default-features = false }
 
 [dev-dependencies]
 ark-bls12-381 = "0.5"
+criterion = "0.5"
+
+[[bench]]
+name = "bench"
+harness = false
