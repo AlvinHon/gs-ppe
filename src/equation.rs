@@ -124,8 +124,7 @@ impl<E: Pairing> Equation<E> {
                     .enumerate()
                     .fold(<E as Pairing>::G2::zero(), |acc, (j, d_j)| {
                         acc + d_j.0.mul(self.gamma[(i, j)])
-                    })
-                    .into();
+                    });
 
                 acc + E::pairing(c_i.0, d_product)
             });
@@ -145,8 +144,7 @@ impl<E: Pairing> Equation<E> {
                 .enumerate()
                 .fold(<E as Pairing>::G2::zero(), |acc, (j, d_j)| {
                     acc + d_j.1.mul(self.gamma[(i, j)])
-                })
-                .into();
+                });
             acc.push(self.b[i] + d_product);
             acc
         });
@@ -178,8 +176,7 @@ impl<E: Pairing> Equation<E> {
                     .enumerate()
                     .fold(<E as Pairing>::G1::zero(), |acc, (i, c_i)| {
                         acc + c_i.1.mul(self.gamma[(i, j)])
-                    })
-                    .into();
+                    });
 
                 acc + E::pairing(self.a[j] + c_product, d_j.0)
             });

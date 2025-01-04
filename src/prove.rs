@@ -13,8 +13,8 @@ use crate::{
 /// Contains the components `φ` and `θ` as a Groth-Sahai proof (without internal randomness `Z`).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Proof<E: Pairing> {
-    pub(crate) phi: Matrix<<E as Pairing>::G2Affine>,
-    pub(crate) theta: Matrix<<E as Pairing>::G1Affine>,
+    pub(crate) phi: Matrix<<E as Pairing>::G2>,
+    pub(crate) theta: Matrix<<E as Pairing>::G1>,
 }
 
 impl<E: Pairing> Proof<E> {
@@ -189,10 +189,7 @@ impl<E: Pairing> Proof<E> {
         let theta = Matrix::new(&[[theta11, theta12], [theta21, theta22]]) + z_u;
 
         // π = (φ, θ)
-        Proof {
-            phi: phi.into(),
-            theta: theta.into(),
-        }
+        Proof { phi, theta }
     }
 
     /// Implements the Proof Randomization function (proof adaption) `RdProof(ck, E, (c, r), (d, s)), π)` defined in the paper.
@@ -344,10 +341,7 @@ impl<E: Pairing> Proof<E> {
                 b_product + d_product + v_product
             };
 
-            (self.phi.clone().into::<<E as Pairing>::G2>()
-                + Matrix::new(&[[phi11, phi12], [phi21, phi22]])
-                + z_v)
-                .into()
+            self.phi.clone() + Matrix::new(&[[phi11, phi12], [phi21, phi22]]) + z_v
         };
 
         self.theta = {
@@ -423,10 +417,7 @@ impl<E: Pairing> Proof<E> {
                 a_product + c_product
             };
 
-            (self.theta.clone().into::<<E as Pairing>::G1>()
-                + Matrix::new(&[[theta11, theta12], [theta21, theta22]])
-                + z_u)
-                .into()
+            self.theta.clone() + Matrix::new(&[[theta11, theta12], [theta21, theta22]]) + z_u
         };
     }
 }
@@ -435,12 +426,9 @@ impl<E: Pairing> Add for Proof<E> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        let phi = self.phi.into::<<E as Pairing>::G2>() + other.phi.into::<<E as Pairing>::G2>();
-        let theta =
-            self.theta.into::<<E as Pairing>::G1>() + other.theta.into::<<E as Pairing>::G1>();
         Proof {
-            phi: phi.into(),
-            theta: theta.into(),
+            phi: self.phi + other.phi,
+            theta: self.theta + other.theta,
         }
     }
 }
@@ -449,13 +437,9 @@ impl<E: Pairing> Div for Proof<E> {
     type Output = Self;
 
     fn div(self, other: Self) -> Self {
-        let phi =
-            self.phi.into::<<E as Pairing>::G2>() + other.phi.into::<<E as Pairing>::G2>().neg();
-        let theta = self.theta.into::<<E as Pairing>::G1>()
-            + other.theta.into::<<E as Pairing>::G1>().neg();
         Proof {
-            phi: phi.into(),
-            theta: theta.into(),
+            phi: self.phi + other.phi.neg(),
+            theta: self.theta + other.theta.neg(),
         }
     }
 }
