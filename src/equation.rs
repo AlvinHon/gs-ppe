@@ -19,9 +19,9 @@ use crate::{Com, CommitmentKeys, Matrix, Proof};
 /// for some x and y.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Equation<E: Pairing> {
-    pub(crate) a: Vec<<E as Pairing>::G1Affine>, // size = n
-    pub(crate) b: Vec<<E as Pairing>::G2Affine>, // size = m
-    pub(crate) gamma: Matrix<E::ScalarField>,    // dim = (m, n)
+    pub(crate) a: Vec<<E as Pairing>::G1>,    // size = n
+    pub(crate) b: Vec<<E as Pairing>::G2>,    // size = m
+    pub(crate) gamma: Matrix<E::ScalarField>, // dim = (m, n)
     pub(crate) target: PairingOutput<E>,
 }
 
@@ -38,8 +38,8 @@ impl<E: Pairing> Equation<E> {
     ) -> Self {
         assert_eq!(gamma.dim(), (b.len(), a.len()));
         Self {
-            a,
-            b,
+            a: a.into_iter().map(|a| a.into()).collect(),
+            b: b.into_iter().map(|b| b.into()).collect(),
             gamma,
             target,
         }

@@ -24,8 +24,8 @@ impl<G: CurveGroup> Com<G> {
         // = (c1 + u11^r1 + u21^r2, c2 + u12^r1 + u22^r2)
         let a = ck.0 .0.mul(r1) + ck.1 .0.mul(r2);
         let b = ck.0 .1.mul(r1) + ck.1 .1.mul(r2);
-        self.0 = self.0 + a;
-        self.1 = self.1 + b;
+        self.0 += a;
+        self.1 += b;
 
         (original, Randomness(r1, r2))
     }

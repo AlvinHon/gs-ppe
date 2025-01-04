@@ -66,8 +66,8 @@ pub fn setup<E: Pairing, R: Rng>(
     }
     let target = ay_product + xb_product + xy_product;
 
-    let a = ay.iter().map(|(a, _)| *a).collect();
-    let b = xb.iter().map(|(_, b)| *b).collect();
+    let a = ay.iter().map(|(a, _)| (*a).into()).collect();
+    let b = xb.iter().map(|(_, b)| (*b).into()).collect();
 
     let equation = Equation::<E> {
         a,
