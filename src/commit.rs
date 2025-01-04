@@ -93,13 +93,13 @@ impl<E: Pairing> CommitmentKeys<E> {
         t2: E::ScalarField,
     ) -> Self {
         // u1 = (g1, g1^a1)
-        let u1 = (g1, g1.mul(a1).into());
+        let u1 = (g1.into(), g1.mul(a1));
         // u2 = (g1^t1, g1^(a1*t1))
-        let u2 = (g1.mul(t1).into(), u1.1.mul(t1).into());
+        let u2 = (g1.mul(t1), u1.1.mul(t1));
         // v1 = (g2, g2^a2)
-        let v1 = (g2, g2.mul(a2).into());
+        let v1 = (g2.into(), g2.mul(a2));
         // v2 = (g2^t2, g2^(a2*t2))
-        let v2 = (g2.mul(t2).into(), v1.1.mul(t2).into());
+        let v2 = (g2.mul(t2), v1.1.mul(t2));
 
         Self {
             u: CommitmentKey(u1, u2),
@@ -117,19 +117,13 @@ impl<E: Pairing> CommitmentKeys<E> {
         t2: E::ScalarField,
     ) -> Self {
         // u1 = (g1, g1^a1)
-        let u1 = (g1, g1.mul(a1).into());
+        let u1 = (g1.into(), g1.mul(a1));
         // u2 = (g1^t1, g1^(a1*t1 - 1))
-        let u2 = (
-            g1.mul(t1).into(),
-            g1.mul(a1.mul(t1).sub(&E::ScalarField::one())).into(),
-        );
+        let u2 = (g1.mul(t1), g1.mul(a1.mul(t1).sub(&E::ScalarField::one())));
         // v1 = (g2, g2^a2)
-        let v1 = (g2, g2.mul(a2).into());
+        let v1 = (g2.into(), g2.mul(a2));
         // v2 = (g2^t2, g2^(a2*t2 - 1))
-        let v2 = (
-            g2.mul(t2).into(),
-            g2.mul(a2.mul(t2).sub(&E::ScalarField::one())).into(),
-        );
+        let v2 = (g2.mul(t2), g2.mul(a2.mul(t2).sub(&E::ScalarField::one())));
         Self {
             u: CommitmentKey(u1, u2),
             v: CommitmentKey(v1, v2),
@@ -139,7 +133,7 @@ impl<E: Pairing> CommitmentKeys<E> {
 
 /// The component in commitment keys, either `u` or `v` in [CommitmentKeys].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct CommitmentKey<G: CurveGroup>(pub (G::Affine, G::Affine), pub (G::Affine, G::Affine));
+pub struct CommitmentKey<G: CurveGroup>(pub (G, G), pub (G, G));
 
 impl<G: CurveGroup> CommitmentKey<G> {
     /// The commitment function `Com`. Returns the commitment of the variable `x` or `y` according to

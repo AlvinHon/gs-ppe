@@ -2,7 +2,7 @@
 
 use ark_ec::CurveGroup;
 use ark_std::rand::Rng;
-use std::ops::{Add, Mul};
+use std::ops::Add;
 
 use crate::{commit::CommitmentKey, randomness::Randomness};
 
