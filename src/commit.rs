@@ -1,4 +1,4 @@
-//! Defines the struct [CommitmentKeys], the commitment key `ck` for `SXDH Commitments`` defined in section 6.2 in the paper [Fuc10](https://eprint.iacr.org/2010/233.pdf).
+//! Defines the struct [CommitmentKeys], the commitment key `ck` for `SXDH Commitments` defined in section 6.2 in the paper [Fuc10](https://eprint.iacr.org/2010/233.pdf).
 
 use ark_ec::{pairing::Pairing, CurveGroup};
 use ark_std::{rand::Rng, One, UniformRand};
@@ -151,6 +151,6 @@ impl<G: CurveGroup> CommitmentKey<G> {
         // Com(ck, X, r) = (u11^r1 + u21^r2, x + u12^r1 + u22^r2)
         let a = self.0 .0.mul(r1) + self.1 .0.mul(r2);
         let b = self.0 .1.mul(r1) + self.1 .1.mul(r2);
-        Com(a.into(), (x + b).into())
+        Com(a, x + b)
     }
 }
